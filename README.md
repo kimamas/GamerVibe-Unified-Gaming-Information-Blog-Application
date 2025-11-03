@@ -60,5 +60,5 @@ GamerVibe reflects my passion for creating well-structured, maintainable softwar
 
 ---
 
-## 🧩 Skills Demonstrated
+## Skills Demonstrated
 C# • ASP.NET • WinForms • SQL Server • SOLID • Design Patterns • OOP • GitLab • Software Architecture
