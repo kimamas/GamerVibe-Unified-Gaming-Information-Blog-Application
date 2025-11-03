@@ -1,0 +1,7 @@
+﻿@page
+@model WebApp.Pages.LogoutModel
+@using Microsoft.AspNetCore.Authentication
+@{
+    await HttpContext.SignOutAsync();
+    Response.Redirect("/Index");
+}

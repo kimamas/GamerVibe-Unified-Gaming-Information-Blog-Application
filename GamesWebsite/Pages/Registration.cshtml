@@ -1,0 +1,46 @@
+﻿@page
+@model WebApp.Pages.RegistrationModel
+@{
+    ViewData["Title"] = "Registration";
+}
+
+
+<h1>@ViewData["Title"]</h1>
+
+<figure asp-validation-summary="All" class="example">
+    <form class="exampleForm" method="post" novalidate>
+        <label for="text"><h5>Username:</h5></label>
+        <p></p>
+        <input type="text" placeholder="Your username..." asp-for="User.username">
+        <span asp-validation-for="User.username" class="text-danger"></span>
+        <p></p>
+        <h5>Email:</h5>
+        <p></p>
+        <input type="text" placeholder="Your email..." asp-for="User.email">
+        <span class="text-danger" asp-validation-for="User.email"></span>
+        <p></p>
+        <label for="password"><h5>Password:</h5></label>
+        <p></p>
+        <input type="password" placeholder="Your password..." asp-for="User.password">
+        <span asp-validation-for="User.password" class="text-danger"></span>
+        <p></p>
+        <label for="dob"><h5>Date of Birth:</h5></label>
+        <p></p>
+        <input type="date" asp-for="User.dateOfBirth">
+        <span asp-validation-for="User.dateOfBirth" class="text-danger"></span>
+        <p></p>
+        <button type="submit" value="Post">Submit</button>
+    </form>
+    <div id="validation-messages" class="text-danger">
+        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+        {
+            <span>@error.ErrorMessage</span>
+
+            <br />
+        }
+    </div>
+</figure>
+
+@section scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,0 +1,143 @@
+﻿@page
+@model GamesWebsite.Pages.GamesModel
+@{
+    ViewData["Title"] = "Games";
+}
+
+<form method="get">
+    <div class="filter-section">
+        <h4>Filter Games</h4>
+
+        <label for="filterType">Filter by:</label>
+        <select id="filterType" name="filterType">
+            <option value="0" selected="@(Model.IsSelected("0"))">Most Relevant</option>
+            <option value="1" selected="@(Model.IsSelected("1"))">Name ascending</option>
+            <option value="2" selected="@(Model.IsSelected("2"))">Name descending</option>
+            <option value="3" selected="@(Model.IsSelected("3"))">Top Rated</option>
+            <option value="4" selected="@(Model.IsSelected("4"))">Most Viewed</option>
+        </select>
+
+        <button type="button" id="toggle-advanced-filters" class="btn btn-secondary" onclick="toggleAdvancedFilters()">Show More Filters</button>
+
+        <div id="advanced-filters" class="filters" style="display:none;">
+
+            <label for="filterType">Select Game Type:</label>
+            <div class="game-type-buttons">
+                <div class="game-option">
+                    <label for="videoGames">Video Games</label>
+                    <input type="radio" id="videoGames" name="gameType" value="video">
+                </div>
+                <div class="game-option">
+                    <label for="boardGames">Board Games</label>
+                    <input type="radio" id="boardGames" name="gameType" value="board">
+                </div>
+            </div>
+
+            <label id="name" for="name">Name:</label>
+            <input type="text" id="name" name="name">
+
+            <label id="developer" for="developer">Developer:</label>
+            <input type="text" id="developer" name="developer">
+
+            <label id="releaseDate" for="releaseDate">Release Year:</label>
+            <input type="number" id="releaseDate" name="releaseDate" min="1500" max="2100">
+
+            <div class="options-container">
+                <div class="option-section">
+                    <label>Genres:</label>
+                    <div class="checkbox-group">
+                        @foreach (var genre in Model.Genres)
+                        {
+                            <div class="checkbox-item">
+                                <label for="genre-@genre">@genre</label>
+                                <input type="checkbox" id="genre-@genre" name="genres" value="@genre">
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="option-section">
+                    <label>Platforms:</label>
+                    <div class="checkbox-group">
+                        @foreach (var platform in Model.Platforms)
+                        {
+                            <div class="checkbox-item">
+                                <label for="platform-@platform">@platform</label>
+                                <input type="checkbox" id="platform-@platform" name="platforms" value="@platform">
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <div class="option-section">
+                    <label>Types (Board Games):</label>
+                    <div class="checkbox-group">
+                        @foreach (var type in Model.Types)
+                        {
+                            <div class="checkbox-item">
+                                <label for="type-@type">@type</label>
+                                <input type="checkbox" id="type-@type" name="types" value="@type">
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button type="submit" id="submit-filters" class="btn btn-primary">Apply Filters</button>
+    </div>
+</form>
+
+<div class="most-popular">
+    <div class="col-lg-12">
+        @if (Model.SelectedGameType != null)
+        {
+            @if(Model.SelectedGameType == "video")
+            {
+                <h3>Video Games</h3>
+            }
+            @if (Model.SelectedGameType == "board")
+            {
+                <h3>Board Games</h3>
+            }
+        }
+        <div class="row" id="video-games-container">
+            @foreach (var game in Model.Games)
+            {
+                <div>
+                    <div class="item">
+                        <img src="@game.imageUrl" alt="@game.name">
+                        <a asp-page="GameDetails" asp-route-gameName="@game.name" asp-route-addVisitor="true">
+                            <h4>@game.name</h4>
+                        </a>
+                        <p>
+                            <i class="fa-rating">Rating: </i> @Math.Round(game.rating, 2)
+                            <i class="fa-visitors">Visitors: </i> @game.numberOfVisitors
+                        </p>
+                        @if (game.gameType == "video" && Model.SelectedGameType != "video")
+                        {
+                            <p>Video Game</p>
+                        }
+                        @if (game.gameType == "board" && Model.SelectedGameType != "board")
+                        {
+                            <p>Board Game</p>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+        <div class="pagination">
+            @if (Model.PageNumber > 1)
+            {
+                <a asp-page="./Games" asp-route-pageNumber="@(Model.PageNumber - 1)" class="btn btn-light">Previous</a>
+            }
+            <span>Page @Model.PageNumber of @Model.TotalPages</span>
+            @if (Model.PageNumber < Model.TotalPages)
+            {
+                <a asp-page="./Games" asp-route-pageNumber="@(Model.PageNumber + 1)" class="btn btn-light">Next</a>
+            }
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script src="~/js/site.js"></script>
+}

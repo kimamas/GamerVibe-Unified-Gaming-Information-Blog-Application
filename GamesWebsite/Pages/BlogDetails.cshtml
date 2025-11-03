@@ -1,0 +1,191 @@
+﻿@page
+@model BlogDetailsModel
+
+@{
+    ViewData["Title"] = "Blog Details";
+    bool isAuthenticated = User.Identity.IsAuthenticated;
+    string username = User.Identity.Name;
+}
+
+<div class="blog-details-container">
+    <div class="back-row">
+        <i class="fa fa-arrow-left" onclick="window.location.href='@Url.Page("/Blogs")'"></i>
+    </div>
+    <p class="blog-user-time">@Model.Blog.UserUsername - @Model.GetTimeAgo(Model.Blog.Created)</p>
+    <figure class="figure-blog">
+        <h1 class="blog-title">@Model.Blog.Name</h1>
+        <p class="blog-description">@Model.Blog.Description</p>
+        <p>Game: @Model.Blog.GameName</p>
+        @if (isAuthenticated && Model.Blog.UserUsername == username)
+        {
+            <div class="blog-edit-buttons">
+                <button id="editBlogButton-@Model.Blog.BlogId" class="btn btn-primary" onclick="toggleBlogEdit(@Model.Blog.BlogId)">Edit Blog</button>
+                <button id="deleteBlogButton-@Model.Blog.BlogId" class="btn btn-danger" onclick="toggleBlogDelete(@Model.Blog.BlogId)">Delete Blog</button>
+            </div>
+            <div id="editBlogForm-@Model.Blog.BlogId" class="editForm" style="display:none;">
+                <form method="post" asp-page-handler="EditBlog">
+                    <input type="hidden" name="BlogId" value="@Model.Blog.BlogId">
+                    <input id="name-blogEdit" type="text" name="name" value="@Model.Blog.Name" />
+                    <textarea class="description-blogs" name="description">@Model.Blog.Description</textarea>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                    <button type="button" class="btn btn-secondary" onclick="toggleBlogEdit(@Model.Blog.BlogId)">Cancel</button>
+                </form>
+            </div>
+            <div id="deleteBlogForm-@Model.Blog.BlogId" class="deleteForm" style="display:none;">
+                <p>Are you sure you want to delete this blog?</p>
+                <form method="post" asp-page-handler="DeleteBlog">
+                    <input type="hidden" name="BlogId" value="@Model.Blog.BlogId">
+                    <button type="submit" class="btn btn-danger">Yes</button>
+                    <button type="button" class="btn btn-secondary" onclick="toggleBlogDelete(@Model.Blog.BlogId)">No</button>
+                </form>
+            </div>
+        }
+    </figure>
+    <h6>Category: @Model.Blog.Category</h6>
+    @if (isAuthenticated)
+    {
+        <form method="post" asp-page-handler="ToggleLikeBlog" asp-route-blogId="@Model.Blog.BlogId" class="inline-form">
+            <button type="submit" class="btn blog-like-button">
+                <i class="fa fa-heart @(Model.HasLikedBlog ? "liked" : "")"></i>
+                <span class="like-count">@Model.BlogLikes</span>
+            </button>
+        </form>
+        <button class="btn btn-primary add-comment-button" onclick="showCommentBox()">Add Comment</button>
+        <div id="commentBox" class="comment-box" style="display:none;">
+            <form method="post" asp-page-handler="AddComment">
+                <input type="hidden" name="BlogId" value="@Model.Blog.BlogId">
+                <textarea name="commentText" placeholder="Add a comment..." required></textarea>
+                <button type="submit" class="btn btn-success comment-submit-button">Submit</button>
+            </form>
+        </div>
+    }
+    <div class="comments-section">
+        <h2 class="comments-title">Comments</h2>
+        <div class="sort-and-search">
+            <label id="sort-by-blogs-details">Sort by:</label>
+            <select id="sortComments" class="comment-sort-select" onchange="sortComments()">
+                <option value="newest" selected="@(Model.IsSelected("newest"))">Newest</option>
+                <option value="oldest" selected="@(Model.IsSelected("oldest"))">Oldest</option>
+                <option value="mostLiked" selected="@(Model.IsSelected("mostLiked"))">Most Liked</option>
+            </select>
+            <input type="text" id="searchComments" class="comment-search" placeholder="Search comments..." onkeyup="searchComments()">
+        </div>
+        @if (Model.Comments != null && Model.Comments.Any())
+        {
+            @foreach (var comment in Model.Comments.Where(c => c.ParentCommentId == null))
+            {
+                <div class="comment">
+                    <p class="comment-username">@comment.Username - @Model.GetTimeAgo(comment.CreateDate)</p>
+                    <p class="comment-text">@comment.CommentText</p>
+                    @if (isAuthenticated && comment.Username == username)
+                    {
+                        <div class="comment-edit-buttons">
+                            <button class="btn btn-primary" onclick="toggleCommentEdit(@comment.CommentId)">Edit</button>
+                            <button class="btn btn-danger" onclick="toggleCommentDelete(@comment.CommentId)">Delete</button>
+                        </div>
+                        <div id="editCommentForm-@comment.CommentId" style="display:none;">
+                            <form method="post" asp-page-handler="EditComment">
+                                <input type="hidden" name="BlogId" value="@Model.Blog.BlogId">
+                                <textarea id="commentTextAdd" name="commentText">@comment.CommentText</textarea>
+                                <input type="hidden" name="commentId" value="@comment.CommentId" />
+                                <button type="submit" class="btn btn-primary">Submit</button>
+                                <button type="button" class="btn btn-secondary" onclick="toggleCommentEdit(@comment.CommentId)">Cancel</button>
+                            </form>
+                        </div>
+                        <div id="deleteCommentForm-@comment.CommentId" style="display:none;">
+                            <p>Are you sure you want to delete this comment?</p>
+                            <form method="post" asp-page-handler="DeleteComment" asp-route-commentId="@comment.CommentId">
+                                <input type="hidden" name="BlogId" value="@Model.Blog.BlogId">
+                                <button type="submit" class="btn btn-danger">Yes</button>
+                                <button type="button" class="btn btn-secondary" onclick="toggleCommentDelete(@comment.CommentId)">No</button>
+                            </form>
+                        </div>
+                    }
+                    <div class="comment-meta">
+                        @if (isAuthenticated)
+                        {
+                            <form method="post" asp-page-handler="ToggleLikeComment" asp-route-commentId="@comment.CommentId" class="inline-form">
+                                <input type="hidden" name="openReplies" value="@ViewData["OpenReplies"]">
+                                <button type="submit" class="btn comment-like-button">
+                                    <input type="hidden" name="BlogId" value="@Model.Blog.BlogId">
+                                    <i class="fa fa-heart @(Model.CommentLikes[comment.CommentId] ? "liked" : "")"></i>
+                                    <span class="like-count">@(Model.CommentLikesCount.ContainsKey(comment.CommentId) ? Model.CommentLikesCount[comment.CommentId] : 0)</span>
+                                </button>
+                            </form>
+                        }
+                        <button class="btn reply-button" onclick="toggleReplies(@comment.CommentId)">
+                            <i class="fa fa-reply"></i>
+                        </button>
+                    </div>
+                    <div id="replies-@comment.CommentId" class="replies">
+                        @if (Model.Replies.ContainsKey(comment.CommentId) && Model.Replies[comment.CommentId].Any())
+                        {
+                            @foreach (var reply in Model.Replies[comment.CommentId])
+                            {
+                                <div class="comment">
+                                    <p class="comment-username">@reply.Username - @Model.GetTimeAgo(reply.CreateDate)</p>
+                                    <p class="comment-text">@reply.CommentText</p>
+                                    @if (isAuthenticated && reply.Username == username)
+                                    {
+                                        <div class="comment-edit-buttons">
+                                            <button class="btn btn-primary" onclick="toggleCommentEdit(@reply.CommentId)">Edit</button>
+                                            <button class="btn btn-danger" onclick="toggleCommentDelete(@reply.CommentId)">Delete</button>
+                                        </div>
+                                        <div id="editCommentForm-@reply.CommentId" style="display:none;">
+                                            <form method="post" asp-page-handler="EditComment">
+                                                <input type="hidden" name="BlogId" value="@Model.Blog.BlogId">
+                                                <textarea name="commentText">@reply.CommentText</textarea>
+                                                <input type="hidden" name="commentId" value="@reply.CommentId" />
+                                                <button type="submit" class="btn btn-primary">Submit</button>
+                                                <button type="button" class="btn btn-secondary" onclick="toggleCommentEdit(@reply.CommentId)">Cancel</button>
+                                            </form>
+                                        </div>
+                                        <div id="deleteCommentForm-@reply.CommentId" style="display:none;">
+                                            <p>Are you sure you want to delete this comment?</p>
+                                            <form method="post" asp-page-handler="DeleteComment" asp-route-commentId="@reply.CommentId">
+                                                <input type="hidden" name="BlogId" value="@Model.Blog.BlogId">
+                                                <button type="submit" class="btn btn-danger">Yes</button>
+                                                <button type="button" class="btn btn-secondary" onclick="toggleCommentDelete(@reply.CommentId)">No</button>
+                                            </form>
+                                        </div>
+                                    }
+                                    <div class="comment-meta">
+                                        @if (isAuthenticated)
+                                        {
+                                            <form method="post" asp-page-handler="ToggleLikeComment" asp-route-commentId="@reply.CommentId" class="inline-form">
+                                                <input type="hidden" name="openReplies" value="@ViewData["OpenReplies"]">
+                                                <button type="submit" class="btn comment-like-button">
+                                                    <input type="hidden" name="BlogId" value="@Model.Blog.BlogId">
+                                                    <i class="fa fa-heart @(Model.CommentLikes[reply.CommentId] ? "liked" : "")"></i>
+                                                    <span class="like-count">@(Model.CommentLikesCount.ContainsKey(reply.CommentId) ? Model.CommentLikesCount[reply.CommentId] : 0)</span>
+                                                </button>
+                                            </form>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        }
+                        @if (isAuthenticated)
+                        {
+                            <form method="post" asp-page-handler="AddComment">
+                                <input type="hidden" name="openReplies" value="@ViewData["OpenReplies"]">
+                                <textarea name="commentText" placeholder="Add a reply..." required></textarea>
+                                <input type="hidden" name="BlogId" value="@Model.Blog.BlogId">
+                                <input type="hidden" name="parentCommentId" value="@comment.CommentId">
+                                <button type="submit" class="btn btn-success comment-reply-submit-button">Submit</button>
+                            </form>
+                        }
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <p class="no-comments">No comments yet. Be the first to comment!</p>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/site.js"></script>
+}

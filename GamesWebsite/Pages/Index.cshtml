@@ -1,0 +1,120 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home page";
+}
+
+<div class="container text-center">
+    <h1 class="display-4">Welcome @Model.Name</h1>
+    <h2> Announcements</h2>
+    <div class="row image-slider">
+        <div class="col">
+            <button class="prev-button" onclick="changeImage(-1)">Previous</button>
+        </div>
+        <div class="col - 6">
+            <div class="frame-image">
+                <figure class="slider-container">
+                    <img id="slider-image" src="images/announcment.jpg" alt="Image">
+                </figure>
+            </div>
+        </div>
+        <div class="col">
+            <button class="next-button" onclick="changeImage(1)">Next</button>
+        </div>
+    </div>
+    <hr />
+    @if (User.Identity.IsAuthenticated)
+    {
+        <h3>Recommended Games</h3>
+
+
+        <div class="most-popular">
+            <div class="col-lg-12">
+                <h3>Video Games</h3>
+                <div class="row">
+
+                    @foreach (var game in Model.RecommendedVideoGames)
+                    {
+
+                        <div>
+                            <div class="item">
+                                <img src="@game.imageUrl" alt="@game.name">
+                                <a asp-page="GameDetails" asp-route-gameName="@game.name" asp-route-addVisitor="true"><h4>@game.name</h4></a>
+                                <br />
+                                <p>
+                                    <i class="fa-rating">Rating: </i> @Math.Round(game.rating, 2)
+
+                                    <i class="fa-visitors">Visitors: </i> @game.numberOfVisitors
+                                </p>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <h3>Board Games</h3>
+                <div class="row">
+
+                    @foreach (var game in Model.RecommendedBoardGames)
+                    {
+
+                        <div>
+                            <div class="item">
+                                <img src="@game.imageUrl" alt="@game.name">
+                                <a asp-page="GameDetails" asp-route-gameName="@game.name" asp-route-addVisitor="true"><h4>@game.name</h4></a>
+                                <br />
+                                <p>
+                                    <i class="fa-rating">Rating: </i> @Math.Round(game.rating, 2)
+
+                                    <i class="fa-visitors">Visitors: </i> @game.numberOfVisitors
+                                </p>
+
+                            </div>
+                        </div>
+                    }
+                </div>
+
+            </div>
+        </div>
+    }
+    <p></p>
+    <h3>Most Visited Games</h3>
+    <div class="most-popular">
+        <div class="col-lg-12">
+            <div class="row">
+
+                @foreach (var game in Model.Games.Take(10))
+                {
+
+                    <div>
+                        <div class="item">
+                            <img src="@game.imageUrl" alt="@game.name">
+                            <a asp-page="GameDetails" asp-route-gameName="@game.name" asp-route-addVisitor="true"><h4>@game.name</h4></a>
+                            <br />
+                            <p>
+                                <i class="fa-rating">Rating: </i> @Math.Round(game.rating, 2)
+
+                                <i class="fa-visitors">Visitors: </i> @game.numberOfVisitors
+                            </p>
+
+                        </div>
+                    </div>
+                }
+
+                @* <div class="row photos">
+                <div class="col">
+                <img id="picture1" src="images/picture6.jpg" alt="picture1">
+                </div>
+                <div class="col">
+                <img id="picture2" src="images/picture2.jpg" alt="picture2">
+                </div>
+                <div class="col">
+                <img id="picture4" src="images/picture4.jpg" alt="picture4">
+                </div>
+                <div class="col">
+                <img id="picture5" src="images/picture5.jpg" alt="picture5">
+                </div>
+                </div> *@
+            </div>
+        </div>
+    </div>
+</div>

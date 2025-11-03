@@ -1,0 +1,28 @@
+﻿@page
+@model LoginModel
+@{
+    ViewData["Title"] = "Login";
+}
+
+<figure asp-validation-summary="All" class="example">
+    <form method="post">
+        <div class="container">
+            <label asp-for="Username"><b>Username</b></label>
+            <input type="text" placeholder="Enter Username" name="Username" required>
+
+            <label asp-for="Password"><b>Password</b></label>
+            <input type="password" placeholder="Enter Password" name="Password" required>
+            <p></p>
+            <button type="submit">Log in</button>
+        </div>
+    </form>
+    <div id="validation-messages" class="text-danger">
+        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+        {
+            <span>@error.ErrorMessage</span>
+            <br />
+        }
+    </div>
+</figure>
+<a class="nav-link text-bright" asp-area="" asp-page="/Registration">Registration</a>
+<a class="nav-link text-bright" asp-area="" asp-page="/ForgotPassword">Forgot the Password</a>
